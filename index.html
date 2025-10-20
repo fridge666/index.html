@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帮测父母性别</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background-color: #4a6bdf;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .question {
+            display: none;
+        }
+        
+        .question.active {
+            display: block;
+        }
+        
+        .question h3 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .option {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .option:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .option.selected {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        .next-btn {
+            margin-top: 20px;
+            padding: 12px 20px;
+            background-color: #4a6bdf;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        
+        .next-btn:hover {
+            background-color: #3a5bc7;
+        }
+        
+        .next-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .loading h3 {
+            margin-bottom: 20px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4a6bdf;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result {
+            text-align: center;
+            padding: 30px 20px;
+        }
+        
+        .result h3 {
+            margin-bottom: 20px;
+            color: #4a6bdf;
+        }
+        
+        .result p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .restart-btn {
+            padding: 10px 20px;
+            background-color: #4a6bdf;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .modal h3 {
+            margin-bottom: 15px;
+        }
+        
+        .modal input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .modal button {
+            padding: 10px 20px;
+            background-color: #4a6bdf;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            color: #999;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>帮测父母性别</h1>
+            <p>通过科学算法预测父母性别</p>
+        </div>
+        
+        <div class="content">
+            <!-- 问题1 -->
+            <div class="question active" id="question1">
+                <h3>问题 1/4</h3>
+                <p>你想预测父亲还是母亲的性别？</p>
+                <div class="options">
+                    <div class="option" data-value="father">父亲</div>
+                    <div class="option" data-value="mother">母亲</div>
+                </div>
+                <button class="next-btn" id="next1" disabled>下一题</button>
+            </div>
+            
+            <!-- 问题2 -->
+            <div class="question" id="question2">
+                <h3>问题 2/4</h3>
+                <p>你吃早餐了吗？</p>
+                <div class="options">
+                    <div class="option">吃了</div>
+                    <div class="option">没吃</div>
+                </div>
+                <button class="next-btn" id="next2" disabled>下一题</button>
+            </div>
+            
+            <!-- 问题3 -->
+            <div class="question" id="question3">
+                <h3>问题 3/4</h3>
+                <p>你最喜欢的老师</p>
+                <div class="options">
+                    <div class="option">大胖妞</div>
+                    <div class="option">Belinda</div>
+                    <div class="option">东君正主</div>
+                    <div class="option">安静下来</div>
+                </div>
+                <button class="next-btn" id="next3" disabled>下一题</button>
+            </div>
+            
+            <!-- 问题4 -->
+            <div class="question" id="question4">
+                <h3>问题 4/4</h3>
+                <p>请选出"口看一波"一词的发源者</p>
+                <div class="options">
+                    <div class="option">历史老师</div>
+                    <div class="option">数字老师</div>
+                    <div class="option">电脑老师</div>
+                    <div class="option">数学老师</div>
+                </div>
+                <button class="next-btn" id="submit">提交问卷</button>
+            </div>
+            
+            <!-- 加载页面 -->
+            <div class="question loading" id="loading">
+                <h3>量子分析中，请稍等。。。</h3>
+                <div class="spinner"></div>
+            </div>
+            
+            <!-- 结果页面 -->
+            <div class="question result" id="result">
+                <h3>预测结果</h3>
+                <p id="result-text"></p>
+                <button class="restart-btn" id="restart">重新开始</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            网站仅供娱乐
+        </div>
+    </div>
+    
+    <!-- 姓名输入对话框 -->
+    <div class="modal" id="nameModal">
+        <div class="modal-content">
+            <h3>请问你的名字是</h3>
+            <input type="text" id="userName" placeholder="请输入你的名字">
+            <button id="confirmName">确定</button>
+        </div>
+    </div>
+    
+    <script>
+        // 获取DOM元素
+        const questions = document.querySelectorAll('.question');
+        const options = document.querySelectorAll('.option');
+        const nextButtons = document.querySelectorAll('.next-btn');
+        const submitButton = document.getElementById('submit');
+        const restartButton = document.getElementById('restart');
+        const nameModal = document.getElementById('nameModal');
+        const userNameInput = document.getElementById('userName');
+        const confirmNameButton = document.getElementById('confirmName');
+        const resultText = document.getElementById('result-text');
+        
+        // 当前问题索引
+        let currentQuestion = 1;
+        let selectedGender = '';
+        
+        // 为所有选项添加点击事件
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                // 移除同一问题中其他选项的选中状态
+                const parentQuestion = this.closest('.question');
+                const optionsInQuestion = parentQuestion.querySelectorAll('.option');
+                optionsInQuestion.forEach(opt => opt.classList.remove('selected'));
+                
+                // 选中当前选项
+                this.classList.add('selected');
+                
+                // 启用下一题按钮
+                const nextBtn = parentQuestion.querySelector('.next-btn');
+                if (nextBtn) {
+                    nextBtn.disabled = false;
+                }
+                
+                // 如果是第一个问题，记录选择的性别
+                if (parentQuestion.id === 'question1') {
+                    selectedGender = this.getAttribute('data-value');
+                }
+            });
+        });
+        
+        // 下一题按钮点击事件
+        document.getElementById('next1').addEventListener('click', function() {
+            document.getElementById('question1').classList.remove('active');
+            document.getElementById('question2').classList.add('active');
+            currentQuestion = 2;
+        });
+        
+        document.getElementById('next2').addEventListener('click', function() {
+            document.getElementById('question2').classList.remove('active');
+            document.getElementById('question3').classList.add('active');
+            currentQuestion = 3;
+        });
+        
+        document.getElementById('next3').addEventListener('click', function() {
+            document.getElementById('question3').classList.remove('active');
+            document.getElementById('question4').classList.add('active');
+            currentQuestion = 4;
+        });
+        
+        // 提交问卷按钮点击事件
+        submitButton.addEventListener('click', function() {
+            // 隐藏当前问题
+            document.getElementById(`question${currentQuestion}`).classList.remove('active');
+            
+            // 显示姓名输入对话框
+            nameModal.style.display = 'flex';
+        });
+        
+        // 确认姓名按钮点击事件
+        confirmNameButton.addEventListener('click', function() {
+            const userName = userNameInput.value.trim();
+            
+            if (userName === '') {
+                alert('请输入你的名字');
+                return;
+            }
+            
+            // 隐藏对话框
+            nameModal.style.display = 'none';
+            
+            // 显示加载页面
+            document.getElementById('loading').classList.add('active');
+            
+            // 模拟加载过程
+            setTimeout(function() {
+                // 隐藏加载页面
+                document.getElementById('loading').classList.remove('active');
+                
+                // 显示结果页面
+                document.getElementById('result').classList.add('active');
+                
+                // 根据第一个问题的选择显示结果
+                if (selectedGender === 'father') {
+                    resultText.textContent = '你父亲的性别为男！';
+                } else if (selectedGender === 'mother') {
+                    resultText.textContent = '你母亲的性别为女！';
+                }
+            }, 2000);
+        });
+        
+        // 重新开始按钮点击事件
+        restartButton.addEventListener('click', function() {
+            // 重置所有状态
+            currentQuestion = 1;
+            selectedGender = '';
+            
+            // 隐藏结果页面
+            document.getElementById('result').classList.remove('active');
+            
+            // 重置所有选项
+            options.forEach(option => option.classList.remove('selected'));
+            
+            // 禁用所有下一题按钮
+            nextButtons.forEach(button => button.disabled = true);
+            
+            // 显示第一个问题
+            document.getElementById('question1').classList.add('active');
+        });
+    </script>
+</body>
+</html>
